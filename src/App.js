@@ -1,37 +1,54 @@
 import { useState, useEffect } from "react";
 
 function App() {
-  const [toDo, setToDo] = useState("");
-  const [toDos, setToDos] = useState([]);
-  const onChange = (event) => setToDo(event.target.value);
-  const onSubmit = (event) => {
-    event.preventDefault();
-    if (toDo === "") {
-      return;
-    }
-    setToDos((currentArray) => [toDo, ...currentArray]);
-    setToDo("");
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState([]);
+  const [dollor, setDollor] = useState(1);
+  const [btc, setBtc] = useState(0.000057);
+  
+  const onChange = (event) => {
+    setDollor(event.target.value);
+    setBtc(0.000057);
   };
-  console.log(toDos);
-  console.log(toDos.map((item, index) => <li key={index}>{item}</li>));
+
+  const changeAmount = (event) => {
+    setDollor(event.target.value);
+  };
+
+  useEffect(() => {
+    fetch("https://api.coinpaprika.com/v1/tickers")
+    .then((response) => response.json())
+    .then((json) => {
+      setCoins(json);
+      setLoading(false);
+    });
+  }, []);
   return (
     <div>
-      <h1>My To Dos ({toDos.length})</h1>
-      <form onSubmit={onSubmit}>
+      <h1>The Coins! {loading ? "" : `(${coins.length})`}</h1>
+      {loading ? (
+        <strong>Loading...</strong>
+      ) : (
+        <select>
+          {coins.map((coin) => (
+            <option>
+              {coin.name} ({coin.symbol}): ${coin.quotes.USD.price} USD
+            </option>
+          ))}
+        </select>
+      )}
+      <hr></hr>
+      <h1>Enter the amount (dollor)</h1>
+      <div>
         <input
-          onChange={onChange}
-          value={toDo}
-          type="text"
-          placeholder="Write your to do..."
+          type="number"
+          value={dollor}
+          onChange={changeAmount}
+          placeholder="dollor"
         />
-        <button>Add To Do</button>
-      </form>
-      <hr />
-      <ul>
-        {toDos.map((item, index) => (
-        <li key={index}>{item}</li>
-        ))}
-      </ul>
+        </div>
+        <hr></hr>
+        <h1>You can get {dollor*0.000057}BTC</h1>
     </div>
   );
 }
